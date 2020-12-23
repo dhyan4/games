@@ -2,20 +2,21 @@ import turtle
 import math
 import random
 import pygame
+from pathlib import Path
 
 
-
-file = '/home/dhyanrasberry/dhyan/python/lesson2/bounce.mp3'
+file = str(Path("bounce.mp3").absolute())
+print(file)
+collisionSound = str(Path("collision.mp3").absolute())
+print(collisionSound)
 pygame.init()
 pygame.mixer.init()
 
 
-
-
-
 wn=turtle.Screen()
 wn.bgcolor("black")
-wn.bgpic("/home/dhyanrasberry/dhyan/python/lesson2/kbgame-bg.gif")
+
+wn.bgpic(Path("kbgame-bg.gif").absolute())
 wn.tracer(3)
 
 mypen = turtle.Turtle()
@@ -147,7 +148,7 @@ while True:
 
 
         if isCollision(player,goals[count]):
-            pygame.mixer.music.load('/home/dhyanrasberry/dhyan/python/lesson2/collision.mp3')
+            pygame.mixer.music.load(collisionSound)
             pygame.mixer.music.play()
             goals[count].setposition(random.randint(-100,100), random.randint(-100,100)) 
             goals[count].right(random.randint(0,360))
