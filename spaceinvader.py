@@ -2,9 +2,29 @@ import turtle
 import os
 import math
 import random
+import pygame
+
+pygame.init()
+pygame.mixer.init()
+
+
 
 wn = turtle.Screen()
 wn.bgcolor("black")
+wn.bgpic("/home/dhyanrasberry/dhyan/games/space_invaders_background.gif")
+wn.tracer(1)
+
+
+#Register the shapes
+turtle.register_shape("/home/dhyanrasberry/dhyan/games/invader.gif")
+turtle.register_shape("/home/dhyanrasberry/dhyan/games/player.gif")
+
+
+
+
+
+
+
 wn.title("Space Invaders")
 
 #Draw the border
@@ -15,6 +35,20 @@ mypen.pendown()
 mypen.speed(0)
 mypen.color("white")
 
+#set the score to 0
+score = 0
+
+#Draw the score
+score_pen = turtle.Turtle()
+score_pen.speed(0)
+score_pen.color("white")
+score_pen.penup()
+score_pen.setposition(-290,280)
+scorestring = "Score: %s" %score
+score_pen.write(scorestring,False,align="left",font=("Arial",14,"normal"))
+score_pen.hideturtle()
+
+
 mypen.pensize(3)
 for side in range(4):
     mypen.fd(600)
@@ -23,8 +57,8 @@ mypen.hideturtle()
 
 #Create the player turtle
 player = turtle.Turtle()
-player.color("blue")
-player.shape("triangle")
+player.color("brown")
+player.shape("/home/dhyanrasberry/dhyan/games/player.gif")
 player.penup()
 player.speed(0)
 player.setposition(0,-250)
@@ -44,12 +78,12 @@ for count in range(number_of_enemys_):
     enemies.append(turtle.Turtle())
 
 for enemy in enemies:   
-    enemy.color("red")
-    enemy.shape("circle")
+    enemy.color("lightgreen")
+    enemy.shape("/home/dhyanrasberry/dhyan/games/invader.gif")
     enemy.penup()
     enemy.speed(0)
     x = random.randint(-200,200)
-    y = random.randint(-100,250)
+    y = random.randint(200,250)
     enemy.setposition(x,y)
 
 enemyspeed = 3
@@ -66,7 +100,7 @@ bullet.setheading(90)
 bullet.shapesize(0.5,0.5)
 bullet.hideturtle()
 
-bulletspeed = 15
+bulletspeed = 50 
 
 #Define bullet state
 #Ready - Ready to fire
@@ -93,6 +127,8 @@ def fire_bullet():
     #Declare bulletstate as a global if it needs changed
     global bulletstate
     if bulletstate == "ready":
+        pygame.mixer.music.load('/home/dhyanrasberry/dhyan/games/laser.wav')
+        pygame.mixer.music.play()
         bulletstate = "fire"
         #Move the bullet just above the player
         x = player.xcor()
@@ -102,7 +138,7 @@ def fire_bullet():
 
 def isCollision(t1,t2):
     distance = math.sqrt(math.pow(t1.xcor()-t2.xcor(),2)+math.pow(t1.ycor()-t2.ycor(),2))
-    if distance < 15:
+    if distance < 20:
 	    return True
     else:
 	    return False        
@@ -122,25 +158,57 @@ turtle.onkey(fire_bullet,"space")
 
 #Main game loop
 while True:
-
-    #Move the enemy
-    x = enemy.xcor()
-    x += enemyspeed
-    enemy.setx(x)
-
+    for enemy in enemies:
+        x=enemy.xcor()
+        x +=enemyspeed
+        enemy.setx(x)
   
-    #Move the enemy back and down 
-    if enemy.xcor() > 279:
-        y = enemy.ycor()
-        y -= 20
-        enemyspeed *= -1
-        enemy.sety(y)
+        #Move the enemy back and down 
+        if enemy.xcor() > 279:
+            #Move all enemies down
+            for e in enemies:
+                y = e.ycor()
+                y -= 20
+                e.sety(y)
+            enemyspeed *= -1
+        #Change enemy direction      
+        if enemy.xcor() < -279:
+            #Move all enemyies down
+            for e in enemies:
+                y = e.ycor()
+                y -= 20
+                e.sety(y)
+                #Change enemy direction
+            enemyspeed *= -1
+                
 
-    if enemy.xcor() < -279:
-        y = enemy.ycor()
-        y -= 20
-        enemyspeed *= -1
-        enemy.sety(y)
+
+    #Check for a collision beetween bullet and enemy
+        if isCollision(bullet, enemy):
+            pygame.mixer.music.load('/home/dhyanrasberry/dhyan/games/explosion.wav')
+            pygame.mixer.music.play()
+            #Reset the bullet
+            bullet.hideturtle()
+            bulletstate = "ready"
+            bullet.setposition(0, -400)
+            #Reset the enemy
+            x = random.randint(-200,200)
+            y = random.randint(200,250)
+            enemy.setposition(x,y)
+            #Update the score
+            score += 10
+            scorestring = "Score: %s" %score
+            score_pen.clear()
+            score_pen.write(scorestring,False,align="left",font=("Arial",14,"normal"))
+            
+
+            
+        for enemy in enemies:
+            if player.ycor() >= enemy.ycor():
+                player.hideturtle()
+                enemy.hideturtle()
+                print ("GAME OVER")
+                break    
 
     #Move the bullet
     y = bullet.ycor()
@@ -153,23 +221,7 @@ while True:
         bulletstate = "ready"
 
 
-    #Check for a collision beetween bullet and enemy
-    if isCollision(bullet, enemy):
-		#Reset the bullet
-	    bullet.hideturtle()
-	    bulletstate = "ready"
-	    bullet.setposition(0, -400)
-		#Reset the enemy
-	    enemy.setposition(-200, 250)
-
-    if isCollision(player, enemy):
-	    player.hideturtle()
-	    enemy.hideturtle()
-	    print ("Game Over")
-	    break    
-
+ 
           
-
-
-
+          
 turtle.done()
